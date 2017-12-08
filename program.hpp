@@ -10,11 +10,10 @@ class program
         uint32_t shaderFP;
 
         void init(const char* vsFile, const char *fsFile);
-
-    public:
         program();
-        program (const char* vertexFile, const char* fragmentFile);
         program(const program &s);
+    public:
+        program (const char* vertexFile, const char* fragmentFile);
         ~program();
 
         void use();

@@ -144,5 +144,6 @@ void program::init(const char* vsFile, const char* fsFile)
     glDeleteShader(shaderVP);
     glDeleteShader(shaderFP);
 
+    std::cout << "Created shader program #" << shaderID << ": " << vsFile << " and " << fsFile << std::endl;
     glCheckErrors("end of shader init");
 }

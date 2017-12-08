@@ -7,7 +7,7 @@ class screen
     private:
         static GLfloat vertices[];
         static GLuint indices[]; 
-        static program shader; 
+        static std::shared_ptr<program> shader; 
 
         static uint32_t vaoID;
         static uint32_t vboID;

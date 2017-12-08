@@ -16,14 +16,14 @@ GLuint screen::indices[] = {
 uint32_t screen::vaoID;
 uint32_t screen::vboID;
 uint32_t screen::iboID;
-program screen::shader;
+std::shared_ptr<program> screen::shader;
 
 void screen::init()
 {
     glCheckErrors("Starting init");
-    shader = program("default.vert", "default.frag");
+    shader = std::make_shared<program>("default.vert", "default.frag");
     glCheckErrors("Created shader");
-    glBindFragDataLocation(shader.getID(), 0, "outColor");
+    glBindFragDataLocation(shader->getID(), 0, "outColor");
     glCheckErrors("bindFragData");
 
     // Create simple square
@@ -36,7 +36,7 @@ void screen::init()
     glGenBuffers(1, (GLuint *)&vboID);
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glBufferData(GL_ARRAY_BUFFER, 3*4*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    GLint posAttrib = glGetAttribLocation(shader.getID(), "vert_position");
+    GLint posAttrib = glGetAttribLocation(shader->getID(), "vert_position");
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
@@ -45,7 +45,6 @@ void screen::init()
     glCheckErrors("created vbo");
 
     // create index buffer
-    GLuint iboID;
     glGenBuffers(1, &iboID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(GLuint), indices, GL_STATIC_DRAW);
@@ -61,7 +60,7 @@ void screen::render()
         std::cerr << "screen::render -  ERROR: trying to render before initializing!" << std::endl;
         return;
     }
-    shader.use();
+    shader->use();
     glCheckErrors("used shader");
 
     glBindVertexArray(vaoID);
@@ -74,18 +73,20 @@ void screen::render()
     glm::mat4 view = glm::mat4();
     glm::mat4 model = glm::mat4();
 
-    GLint projLoc = glGetUniformLocation(shader.getID(), "mProj");
-    GLint viewLoc = glGetUniformLocation(shader.getID(), "mView");
-    GLint modelLoc = glGetUniformLocation(shader.getID(), "mWorld");
+    GLint projLoc = glGetUniformLocation(shader->getID(), "mProj");
+    GLint viewLoc = glGetUniformLocation(shader->getID(), "mView");
+    GLint modelLoc = glGetUniformLocation(shader->getID(), "mWorld");
+    glCheckErrors("get Uniforms");
 
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, &proj[0][0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+    glCheckErrors("set Uniforms");
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glCheckErrors("draw tris");
 
-    shader.unuse();
+    shader->unuse();
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glCheckErrors("unuse shader");
