@@ -13,9 +13,16 @@ GLuint screen::indices[] = {
         0, 1, 2,
         2, 1, 3
     };
+GLfloat screen::uvs[] = {
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 1
+    };
 uint32_t screen::vaoID;
 uint32_t screen::vboID;
 uint32_t screen::iboID;
+uint32_t screen::uvBuffer;
 std::shared_ptr<program> screen::shader;
 
 void screen::init()
@@ -39,6 +46,13 @@ void screen::init()
     GLint posAttrib = glGetAttribLocation(shader->getID(), "vert_position");
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, (GLuint *)&uvBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, 2*4*sizeof(GLfloat), uvs, GL_STATIC_DRAW);
+    GLint uvAttrib = glGetAttribLocation(shader->getID(), "in_uvs");
+    glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
 
