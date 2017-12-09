@@ -7,8 +7,8 @@ This is a simple WIP for a Doom-like engine in C++. Currently only draws a simpl
 - screen class for the screen
 
 # TODO
-- Define UV coordinates for the screen
-- Develop a shader to draw vertical lines for walls, ceilings, and floors
-- Implement textures
-- Implement a camera and movement
-- Implement UI
+- [x] Define UV coordinates for the screen
+- [ ] Develop a shader to draw vertical lines for walls, ceilings, and floors
+- [ ] Implement textures
+- [ ] Implement a camera and movement
+- [ ] Implement UI
