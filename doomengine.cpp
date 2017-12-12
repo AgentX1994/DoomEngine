@@ -29,6 +29,23 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             }
     }
 }
+
+// generates a sin wave in buffer, with the frequency freq, and starting phase
+// phase.
+// The sin wave will vary between 0 and 1 instead of -1 and 1
+// Frequency is based on buffer length, so a frequency of 5.0 will generate a
+// sin wave with 5 periods in the buffer
+void gen_sin(float buffer[], int n, double freq, double &phase)
+{
+    double inc = 2.0*M_PI*freq/n;
+    for (int i = 0; i < n; i++)
+    {
+        buffer[i] = std::sin(phase)/2 + 0.5;
+        phase += inc;
+        if (phase >= 2.0*M_PI) phase -= 2.0*M_PI;
+    }
+}
+
 int main()
 {
     // Initialize glfw
@@ -46,7 +63,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
     GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
 
@@ -72,6 +89,10 @@ int main()
 
     uint32_t frames = 0;
     double fps_time = 0.0;
+
+    double phase = 0.0; // Phase for sin distance buffer
+    float *distances = new float[width]; // per pixel distance buffer
+
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -88,16 +109,28 @@ int main()
             fps_time -= 1.0;
         }
 
+        int old_width = width;
         glfwGetFramebufferSize(window, (int*)&width, (int*)&height);
         glViewport(0, 0, width, height);
-        //float ratio = width / (float) height;
+
+        if (old_width != width)
+        {
+            std::cout << "width changed" << std::endl;
+            delete [] distances;
+            distances = new float[width];
+        }
+
+        // Distance buffer
+        gen_sin(distances, width, 5.05, phase);
 
         //render here
+        screen::setDistances(distances, width);
         screen::render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    delete [] distances;
 
     glfwDestroyWindow(window);
     glfwTerminate();

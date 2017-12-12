@@ -25,6 +25,8 @@ uint32_t screen::iboID;
 uint32_t screen::uvBuffer;
 std::shared_ptr<program> screen::shader;
 
+GLuint screen::distTextureID;
+
 void screen::init()
 {
     glCheckErrors("Starting init");
@@ -64,7 +66,48 @@ void screen::init()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(GLuint), indices, GL_STATIC_DRAW);
 
     glCheckErrors("created ibo");
+
+    // Create 1d texture
+    glGenTextures(1, &distTextureID);
+    glCheckErrors("create texture");
     initialized = true;
+}
+
+void screen::setDistances(float *d, int n)
+{
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_1D, distTextureID);
+    glCheckErrors("Bind texture");
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glCheckErrors("Set texture alignment");
+
+    glTexImage1D(
+            GL_TEXTURE_1D,      // Type of texture
+            0,                  // Level of Detail
+            GL_RGBA32F,         // Internal data storage format
+            n,                  // Size of data in pixels
+            0,                  // Border, must be 0
+            GL_RED,             // How d is stored locally
+            GL_FLOAT,           // Data type used by d
+            d                   // d
+            );
+    glCheckErrors("send data to texture");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glCheckErrors("set wrap s");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glCheckErrors("set wrap t");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glCheckErrors("set mag filter");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glCheckErrors("set min filter");
+
+    glBindTexture(GL_TEXTURE_1D, 0);
+    glCheckErrors("done making texture");
 }
 
 void screen::render()
@@ -90,12 +133,19 @@ void screen::render()
     GLint projLoc = glGetUniformLocation(shader->getID(), "mProj");
     GLint viewLoc = glGetUniformLocation(shader->getID(), "mView");
     GLint modelLoc = glGetUniformLocation(shader->getID(), "mWorld");
+
+    GLint texLoc = glGetUniformLocation(shader->getID(), "distances");
     glCheckErrors("get Uniforms");
 
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, &proj[0][0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+    glUniform1i(texLoc, 0);
     glCheckErrors("set Uniforms");
+
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_1D, distTextureID);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glCheckErrors("draw tris");
