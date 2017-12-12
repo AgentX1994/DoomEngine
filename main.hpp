@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cinttypes>
+#include <cmath>
 
 // OpenGl includes
 #include <OpenGL/GL3.h>

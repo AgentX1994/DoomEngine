@@ -15,8 +15,11 @@ class screen
         static uint32_t iboID;
         static uint32_t uvBuffer;
 
+        static GLuint distTextureID;
+
         static bool initialized;
     public:
         static void init();
+        static void setDistances(float d[], int n);
         static void render();
 };
