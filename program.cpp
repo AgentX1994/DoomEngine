@@ -12,8 +12,6 @@ program::program (const char* vertexFile, const char* fragmentFile)
 
 program::~program()
 {
-    glDeleteShader(shaderFP);
-    glDeleteShader(shaderVP);
     glDeleteProgram(shaderID);
 }
 
@@ -39,8 +37,8 @@ uint32_t program::getID()
 void program::init(const char* vsFile, const char* fsFile)
 {
     // Create the shaders
-    shaderVP = glCreateShader(GL_VERTEX_SHADER);
-    shaderFP = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint shaderVP = glCreateShader(GL_VERTEX_SHADER);
+    GLuint shaderFP = glCreateShader(GL_FRAGMENT_SHADER);
 
     const char* vp = readSource(vsFile);
     const char* fp = readSource(fsFile);

@@ -49,6 +49,7 @@ void screen::init()
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
+    // create UV buffer
     glGenBuffers(1, (GLuint *)&uvBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
     glBufferData(GL_ARRAY_BUFFER, 2*4*sizeof(GLfloat), uvs, GL_STATIC_DRAW);
@@ -75,13 +76,16 @@ void screen::init()
 
 void screen::setDistances(float *d, int n)
 {
+    // Bind the distance texture
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_1D, distTextureID);
     glCheckErrors("Bind texture");
 
+    // Set the texture's alignment
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glCheckErrors("Set texture alignment");
 
+    // Send distance data
     glTexImage1D(
             GL_TEXTURE_1D,      // Type of texture
             0,                  // Level of Detail
@@ -94,6 +98,7 @@ void screen::setDistances(float *d, int n)
             );
     glCheckErrors("send data to texture");
 
+    // Set the proper wrapping and filtering
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glCheckErrors("set wrap s");
 
@@ -144,12 +149,14 @@ void screen::render()
     glUniform1i(texLoc, 0);
     glCheckErrors("set Uniforms");
 
+    // bind the distance texture
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_1D, distTextureID);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glCheckErrors("draw tris");
 
+    // Done rendering, unset everything
     shader->unuse();
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

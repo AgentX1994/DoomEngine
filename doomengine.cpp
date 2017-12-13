@@ -2,11 +2,14 @@
 #include "program.hpp"
 #include "screen.hpp"
 
+// A simple error callback that just echos errors to the cerr stream
 void error_callback(int error, const char* des)
 {
     std::cerr << "ERROR: " << des << std::endl;
 }
 
+// A simple key callback that closes the window if esc is pressed, and otherwise
+// simply echos the keycode to cout
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     switch(key)
@@ -59,11 +62,11 @@ int main()
 
     // Set window settings
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);                  // OpenGL 3.2
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Forward compatible
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // Core
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);    // Let window be resized
 
     GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
 
@@ -82,7 +85,7 @@ int main()
     glfwGetFramebufferSize(window, (int*)&width, (int*)&height);
     glViewport(0, 0, width, height);
 
-    screen::init();
+    screen::init(); // Prepare screen for rendering
 
     glClearColor(0.5, 0.5, 0.5, 1.0);
     double lastFrameTime = glfwGetTime();
@@ -90,13 +93,14 @@ int main()
     uint32_t frames = 0;
     double fps_time = 0.0;
 
-    double phase = 0.0; // Phase for sin distance buffer
+    double phase = 0.0; // Phase for sin distance buffer testing
     float *distances = new float[width]; // per pixel distance buffer
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+        // Simple fps counter
         double curFrameTime = glfwGetTime();
         double delta = curFrameTime - lastFrameTime;
         lastFrameTime = curFrameTime;
@@ -109,6 +113,7 @@ int main()
             fps_time -= 1.0;
         }
 
+        // Check if window has been resized
         int old_width = width;
         glfwGetFramebufferSize(window, (int*)&width, (int*)&height);
         glViewport(0, 0, width, height);
@@ -117,10 +122,10 @@ int main()
         {
             std::cout << "width changed" << std::endl;
             delete [] distances;
-            distances = new float[width];
+            distances = new float[width]; // Create new distance buffer
         }
 
-        // Distance buffer
+        // fill distance buffer
         gen_sin(distances, width, 5.05, phase);
 
         //render here
