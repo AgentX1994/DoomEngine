@@ -11,6 +11,9 @@
 
 #include "main.hpp"
 
+float degrees_to_radians(float a);
+float radians_to_degrees(float a);
+
 char *readSource(const char *file);
 
 void mat4PrettyPrint(glm::mat4 m);

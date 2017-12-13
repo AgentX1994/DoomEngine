@@ -8,6 +8,11 @@ void error_callback(int error, const char* des)
     std::cerr << "ERROR: " << des << std::endl;
 }
 
+// Temporary direction vector for raycasting
+glm::vec2 dir = glm::normalize(glm::vec2(1,1));
+float fov = degrees_to_radians(60);
+float turn_amount = degrees_to_radians(5);
+
 // A simple key callback that closes the window if esc is pressed, and otherwise
 // simply echos the keycode to cout
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -18,6 +23,20 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             if (action == GLFW_PRESS)
             {
                 glfwSetWindowShouldClose(window, true);
+            }
+            break;
+        case GLFW_KEY_A:
+        case GLFW_KEY_LEFT:
+            if (action == GLFW_PRESS || action == GLFW_REPEAT)
+            {
+                dir = glm::rotate(dir, turn_amount);
+            }
+            break;
+        case GLFW_KEY_D:
+        case GLFW_KEY_RIGHT:
+            if (action == GLFW_PRESS || action == GLFW_REPEAT)
+            {
+                dir = glm::rotate(dir, -turn_amount);
             }
             break;
         default:
@@ -55,11 +74,12 @@ typedef struct wall {
     glm::vec2 p2;
 } wall;
 
+const float box_radius = 1; // size of box from 0,0 to a corner
 glm::vec2 wall_points[] = {
-    glm::vec2(-1,-1),
-    glm::vec2(-1, 1),
-    glm::vec2( 1,-1),
-    glm::vec2( 1, 1)
+    glm::vec2(-box_radius,-box_radius),
+    glm::vec2(-box_radius, box_radius),
+    glm::vec2( box_radius,-box_radius),
+    glm::vec2( box_radius, box_radius)
 };
 
 wall walls[] = {
@@ -101,17 +121,15 @@ float cast_ray(glm::vec2 p, glm::vec2 r, glm::vec2 q1, glm::vec2 q2)
     }
 }
 
-// Temporary direction vector for raycasting
-glm::vec2 dir = glm::normalize(glm::vec2(1,1));
-float fov = 90;
 void calc_distances(float buffer[], int n, wall map[], int num_walls)
 {
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
     glm::vec2 v = glm::rotate(dir, fov_2);
-    std::cout << "start vector: <" << v.x << "," << v.y << "}" << std::endl;
+    //std::cout << "start vector: <" << v.x << "," << v.y << "}" << std::endl;
     for (int i = 0; i < n; i++)
     {
+        //std::cout << "testing for intersections for vector: <" << v.x << "," << v.y << ">" << std::endl;
         float min_dist = INFINITY;
         for (int j = 0; j < num_walls; j++)
         {
@@ -121,14 +139,10 @@ void calc_distances(float buffer[], int n, wall map[], int num_walls)
                 min_dist = dist;
             }
         }
-        if(std::isinf(min_dist))
-        {
-            std::cout << "No intersection for vector: <" << v.x << "," << v.y << ">" << std::endl;
-        }
         buffer[i] = min_dist;
         v = glm::rotate(v, turn_angle);
     }
-    std::cout << "end vector: <" << v.x << "," << v.y << "}" << std::endl;
+    //std::cout << "end vector: <" << v.x << "," << v.y << "}" << std::endl;
 }
 
 int main()

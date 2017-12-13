@@ -8,8 +8,18 @@
 
 #include "utils.hpp"
 
+float degrees_to_radians(float a)
+{
+    return a*M_PI/180;
+}
+
+float radians_to_degrees(float a)
+{
+    return a*180/M_PI;
+}
+
 char *readSource(const char *file){
-    char *text;
+    char *text = NULL;
     if(file != NULL){
         FILE *f = fopen(file, "r");
         
