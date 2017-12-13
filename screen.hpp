@@ -16,6 +16,7 @@ class screen
         static uint32_t uvBuffer;               // GL Array Object to hold UVs
 
         static GLuint distTextureID;            // GL 1D texture holding distances
+        static GLuint colorTextureID;           // GL 1D texture holding colors
 
         static bool initialized;                // has the static class been initialized?
     public:
@@ -25,6 +26,9 @@ class screen
 
         // Sends the float array data to the distance texture
         static void setDistances(float d[], int n);
+
+        // Sends the color information to the color texture
+        static void setColors(glm::vec3 colors[], int n);
 
         // Renders the screen rectangle
         static void render();

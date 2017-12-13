@@ -26,6 +26,7 @@ uint32_t screen::uvBuffer;
 std::shared_ptr<program> screen::shader;
 
 GLuint screen::distTextureID;
+GLuint screen::colorTextureID;
 
 void screen::init()
 {
@@ -70,7 +71,10 @@ void screen::init()
 
     // Create 1d texture
     glGenTextures(1, &distTextureID);
-    glCheckErrors("create texture");
+    glCheckErrors("create dist texture");
+
+    glGenTextures(1, &colorTextureID);
+    glCheckErrors("create color texture");
     initialized = true;
 }
 
@@ -79,11 +83,11 @@ void screen::setDistances(float *d, int n)
     // Bind the distance texture
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_1D, distTextureID);
-    glCheckErrors("Bind texture");
+    glCheckErrors("dist Bind texture");
 
     // Set the texture's alignment
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glCheckErrors("Set texture alignment");
+    glCheckErrors("dist Set texture alignment");
 
     // Send distance data
     glTexImage1D(
@@ -96,23 +100,64 @@ void screen::setDistances(float *d, int n)
             GL_FLOAT,           // Data type used by d
             d                   // d
             );
-    glCheckErrors("send data to texture");
+    glCheckErrors("dist send data to texture");
 
     // Set the proper wrapping and filtering
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glCheckErrors("set wrap s");
+    glCheckErrors("dist set wrap s");
 
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glCheckErrors("set wrap t");
+    glCheckErrors("dist set wrap t");
 
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glCheckErrors("set mag filter");
+    glCheckErrors("dist set mag filter");
 
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glCheckErrors("set min filter");
+    glCheckErrors("dist set min filter");
 
     glBindTexture(GL_TEXTURE_1D, 0);
-    glCheckErrors("done making texture");
+    glCheckErrors("dist done making texture");
+}
+
+void screen::setColors(glm::vec3 *d, int n)
+{
+    // Bind the distance texture
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_1D, colorTextureID);
+    glCheckErrors("color Bind texture");
+
+    // Set the texture's alignment
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glCheckErrors("color Set texture alignment");
+
+    // Send distance data
+    glTexImage1D(
+            GL_TEXTURE_1D,      // Type of texture
+            0,                  // Level of Detail
+            GL_RGBA32F,         // Internal data storage format
+            n,                  // Size of data in pixels
+            0,                  // Border, must be 0
+            GL_RGB,             // How d is stored locally
+            GL_FLOAT,           // Data type used by d
+            d                   // d
+            );
+    glCheckErrors("color send data to texture");
+
+    // Set the proper wrapping and filtering
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glCheckErrors("color set wrap s");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glCheckErrors("color set wrap t");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glCheckErrors("color set mag filter");
+
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glCheckErrors("color set min filter");
+
+    glBindTexture(GL_TEXTURE_1D, 0);
+    glCheckErrors("done making color texture");
 }
 
 void screen::render()
@@ -139,19 +184,24 @@ void screen::render()
     GLint viewLoc = glGetUniformLocation(shader->getID(), "mView");
     GLint modelLoc = glGetUniformLocation(shader->getID(), "mWorld");
 
-    GLint texLoc = glGetUniformLocation(shader->getID(), "distances");
+    GLint distLoc = glGetUniformLocation(shader->getID(), "distances");
+    GLint colorLoc = glGetUniformLocation(shader->getID(), "colors");
     glCheckErrors("get Uniforms");
 
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, &proj[0][0]);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 
-    glUniform1i(texLoc, 0);
+    glUniform1i(distLoc, 0);
+    glUniform1i(colorLoc, 1);
     glCheckErrors("set Uniforms");
 
     // bind the distance texture
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_1D, distTextureID);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_1D, colorTextureID);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glCheckErrors("draw tris");

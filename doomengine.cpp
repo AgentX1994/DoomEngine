@@ -72,6 +72,7 @@ void gen_sin(float buffer[], int n, double freq, double &phase)
 typedef struct wall {
     glm::vec2 p1;
     glm::vec2 p2;
+    glm::vec3 color;
 } wall;
 
 const float box_radius = 1; // size of box from 0,0 to a corner
@@ -82,11 +83,17 @@ glm::vec2 wall_points[] = {
     glm::vec2( box_radius, box_radius)
 };
 
+glm::vec3 COLOR_RED(1,0,0);
+glm::vec3 COLOR_WHITE(1,1,1);
+glm::vec3 COLOR_BLUE(0, 0, 1);
+glm::vec3 COLOR_GREEN(0, 1, 0);
+glm::vec3 COLOR_PINK(1, 0.5, 0.5);
+
 wall walls[] = {
-    {wall_points[0], wall_points[1]},
-    {wall_points[1], wall_points[3]},
-    {wall_points[2], wall_points[3]},
-    {wall_points[0], wall_points[2]},
+    {wall_points[0], wall_points[1], COLOR_WHITE},
+    {wall_points[1], wall_points[3], COLOR_RED},
+    {wall_points[2], wall_points[3], COLOR_BLUE},
+    {wall_points[0], wall_points[2], COLOR_GREEN},
 };
 
 float cross_2d(glm::vec2 a, glm::vec2 b)
@@ -121,7 +128,7 @@ float cast_ray(glm::vec2 p, glm::vec2 r, glm::vec2 q1, glm::vec2 q2)
     }
 }
 
-void calc_distances(float buffer[], int n, wall map[], int num_walls)
+void calc_closest_wall(float buffer[], glm::vec3 color_buffer[], int n, wall map[], int num_walls)
 {
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
@@ -131,15 +138,18 @@ void calc_distances(float buffer[], int n, wall map[], int num_walls)
     {
         //std::cout << "testing for intersections for vector: <" << v.x << "," << v.y << ">" << std::endl;
         float min_dist = INFINITY;
+        glm::vec3 min_color = COLOR_PINK;
         for (int j = 0; j < num_walls; j++)
         {
             float dist = cast_ray(glm::vec2(0,0), v, map[j].p1, map[j].p2);
             if (dist < min_dist)
             {
                 min_dist = dist;
+                min_color = map[j].color;
             }
         }
         buffer[i] = min_dist;
+        color_buffer[i] = min_color;
         v = glm::rotate(v, turn_angle);
     }
     //std::cout << "end vector: <" << v.x << "," << v.y << "}" << std::endl;
@@ -190,8 +200,8 @@ int main()
     double fps_time = 0.0;
 
     //double phase = 0.0; // Phase for sin distance buffer testing
-    float *distances = new float[width]; // per pixel distance buffer
-
+    float *distances = new float[width]; // per vertical line distance buffer
+    glm::vec3 *textures = new glm::vec3[width]; // per vertical line color
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -223,7 +233,7 @@ int main()
 
         // fill distance buffer
         //gen_sin(distances, width, 0.01, phase);
-        calc_distances(distances, width, walls, 4);
+        calc_closest_wall(distances, textures, width, walls, 4);
 
         /* std::cout << "["; */
         /* for (int i = 0; i < width; i++) */
@@ -234,6 +244,7 @@ int main()
 
         //render here
         screen::setDistances(distances, width);
+        screen::setColors(textures, width);
         screen::render();
 
         glfwSwapBuffers(window);

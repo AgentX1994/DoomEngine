@@ -4,13 +4,13 @@ in vec2 uvs;
 
 out vec4 outColor;
 uniform sampler1D distances;
+uniform sampler1D colors;
 
 // Currently, a distance of 1.0 corresponds to half the screen as wall
 // and a distance of 0.0 as the whole screen
 
 // Some random colors to use
 vec3 ceilColor = vec3(0.75,0.25,0.75);
-vec3 wallColor = vec3(0.5, 0.1, 0.5);
 vec3 floorColor = vec3(0.9, 0.5, 0.9);
 
 const float dist_to_viewport = 0.1;
@@ -28,6 +28,7 @@ void main()
         upperThreshold = 0.5;
         lowerThreshold = 0.5;
     }
+    vec3 wallColor = texture(colors, uvs.x).rgb;
 
     float height = uvs.y;
     vec3 color;
