@@ -49,6 +49,88 @@ void gen_sin(float buffer[], int n, double freq, double &phase)
     }
 }
 
+// Walls for testing the ray tracing
+typedef struct wall {
+    glm::vec2 p1;
+    glm::vec2 p2;
+} wall;
+
+glm::vec2 wall_points[] = {
+    glm::vec2(-1,-1),
+    glm::vec2(-1, 1),
+    glm::vec2( 1,-1),
+    glm::vec2( 1, 1)
+};
+
+wall walls[] = {
+    {wall_points[0], wall_points[1]},
+    {wall_points[1], wall_points[3]},
+    {wall_points[2], wall_points[3]},
+    {wall_points[0], wall_points[2]},
+};
+
+float cross_2d(glm::vec2 a, glm::vec2 b)
+{
+    return a.x*b.y - a.y*b.x;
+}
+
+float eps = 1e-4;
+// Finds the distance from point p to the line q1 q2 in the direction r
+// Assumes r is normalized
+float cast_ray(glm::vec2 p, glm::vec2 r, glm::vec2 q1, glm::vec2 q2)
+{
+    glm::vec2 s = q2-q1;
+    float r_cross_s = cross_2d(r,s);
+    if (std::abs(r_cross_s) > eps)
+    {
+        glm::vec2 q_minus_p = q1-p;
+        float qp_cross_r = cross_2d(q_minus_p, r);
+        float qp_cross_s = cross_2d(q_minus_p, s);
+        float t = qp_cross_s/r_cross_s;
+        float u = qp_cross_r/r_cross_s;
+        if (t > 0 && u > 0 && u < 1)
+        {
+            return t;
+        } else
+        {
+            return INFINITY;
+        }
+    } else
+    {
+        return INFINITY;
+    }
+}
+
+// Temporary direction vector for raycasting
+glm::vec2 dir = glm::normalize(glm::vec2(1,1));
+float fov = 90;
+void calc_distances(float buffer[], int n, wall map[], int num_walls)
+{
+    float fov_2 = fov/2;
+    float turn_angle = -fov/n;
+    glm::vec2 v = glm::rotate(dir, fov_2);
+    std::cout << "start vector: <" << v.x << "," << v.y << "}" << std::endl;
+    for (int i = 0; i < n; i++)
+    {
+        float min_dist = INFINITY;
+        for (int j = 0; j < num_walls; j++)
+        {
+            float dist = cast_ray(glm::vec2(0,0), v, map[j].p1, map[j].p2);
+            if (dist < min_dist)
+            {
+                min_dist = dist;
+            }
+        }
+        if(std::isinf(min_dist))
+        {
+            std::cout << "No intersection for vector: <" << v.x << "," << v.y << ">" << std::endl;
+        }
+        buffer[i] = min_dist;
+        v = glm::rotate(v, turn_angle);
+    }
+    std::cout << "end vector: <" << v.x << "," << v.y << "}" << std::endl;
+}
+
 int main()
 {
     // Initialize glfw
@@ -93,7 +175,7 @@ int main()
     uint32_t frames = 0;
     double fps_time = 0.0;
 
-    double phase = 0.0; // Phase for sin distance buffer testing
+    //double phase = 0.0; // Phase for sin distance buffer testing
     float *distances = new float[width]; // per pixel distance buffer
 
     while (!glfwWindowShouldClose(window))
@@ -126,7 +208,15 @@ int main()
         }
 
         // fill distance buffer
-        gen_sin(distances, width, 5.05, phase);
+        //gen_sin(distances, width, 0.01, phase);
+        calc_distances(distances, width, walls, 4);
+
+        /* std::cout << "["; */
+        /* for (int i = 0; i < width; i++) */
+        /* { */
+        /*     std::cout << distances[i] << ","; */
+        /* } */
+        /* std::cout << "]" << std::endl; */
 
         //render here
         screen::setDistances(distances, width);
