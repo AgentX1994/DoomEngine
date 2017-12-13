@@ -52,22 +52,6 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     }
 }
 
-// generates a sin wave in buffer, with the frequency freq, and starting phase
-// phase.
-// The sin wave will vary between 0 and 1 instead of -1 and 1
-// Frequency is based on buffer length, so a frequency of 5.0 will generate a
-// sin wave with 5 periods in the buffer
-void gen_sin(float buffer[], int n, double freq, double &phase)
-{
-    double inc = 2.0*M_PI*freq/n;
-    for (int i = 0; i < n; i++)
-    {
-        buffer[i] = std::sin(phase)/2 + 0.5;
-        phase += inc;
-        if (phase >= 2.0*M_PI) phase -= 2.0*M_PI;
-    }
-}
-
 // Walls for testing the ray tracing
 typedef struct wall {
     glm::vec2 p1;
@@ -83,11 +67,12 @@ glm::vec2 wall_points[] = {
     glm::vec2( box_radius, box_radius)
 };
 
-glm::vec3 COLOR_RED(1,0,0);
-glm::vec3 COLOR_WHITE(1,1,1);
-glm::vec3 COLOR_BLUE(0, 0, 1);
-glm::vec3 COLOR_GREEN(0, 1, 0);
-glm::vec3 COLOR_PINK(1, 0.5, 0.5);
+glm::vec3 COLOR_RED     (1.0, 0.0, 0.0);
+glm::vec3 COLOR_WHITE   (1.0, 1.0, 1.0);
+glm::vec3 COLOR_BLUE    (0.0, 0.0, 1.0);
+glm::vec3 COLOR_GREEN   (0.0, 1.0, 0.0);
+glm::vec3 COLOR_PINK    (1.0, 0.5, 0.5);
+glm::vec3 COLOR_BLACK   (0.0, 0.0, 0.0);
 
 wall walls[] = {
     {wall_points[0], wall_points[1], COLOR_WHITE},
@@ -133,10 +118,8 @@ void calc_closest_wall(float buffer[], glm::vec3 color_buffer[], int n, wall map
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
     glm::vec2 v = glm::rotate(dir, fov_2);
-    //std::cout << "start vector: <" << v.x << "," << v.y << "}" << std::endl;
     for (int i = 0; i < n; i++)
     {
-        //std::cout << "testing for intersections for vector: <" << v.x << "," << v.y << ">" << std::endl;
         float min_dist = INFINITY;
         glm::vec3 min_color = COLOR_PINK;
         for (int j = 0; j < num_walls; j++)
@@ -152,7 +135,6 @@ void calc_closest_wall(float buffer[], glm::vec3 color_buffer[], int n, wall map
         color_buffer[i] = min_color;
         v = glm::rotate(v, turn_angle);
     }
-    //std::cout << "end vector: <" << v.x << "," << v.y << "}" << std::endl;
 }
 
 int main()
@@ -231,16 +213,8 @@ int main()
             distances = new float[width]; // Create new distance buffer
         }
 
-        // fill distance buffer
-        //gen_sin(distances, width, 0.01, phase);
+        // fill distance and color buffers
         calc_closest_wall(distances, textures, width, walls, 4);
-
-        /* std::cout << "["; */
-        /* for (int i = 0; i < width; i++) */
-        /* { */
-        /*     std::cout << distances[i] << ","; */
-        /* } */
-        /* std::cout << "]" << std::endl; */
 
         //render here
         screen::setDistances(distances, width);
