@@ -10,8 +10,8 @@ uniform sampler1D colors;
 // and a distance of 0.0 as the whole screen
 
 // Some random colors to use
-vec3 ceilColor = vec3(0.75,0.25,0.75);
-vec3 floorColor = vec3(0.9, 0.5, 0.9);
+vec3 ceilColor  = vec3(0.0, 0.0, 0.0);
+vec3 floorColor = vec3(0.5, 0.5, 0.5);
 
 const float dist_to_viewport = 0.1;
 const float wall_height = 3;

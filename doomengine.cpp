@@ -47,7 +47,7 @@ wall walls[] = {
     {wall_points[0], wall_points[2], COLOR_GREEN},
 };
 
-int num_walls = sizeof(walls)/sizeof(wall);
+uint32_t num_walls = sizeof(walls)/sizeof(wall);
 
 float cross_2d(glm::vec2 a, glm::vec2 b)
 {
@@ -81,11 +81,11 @@ float cast_ray(glm::vec2 p, glm::vec2 r, glm::vec2 q1, glm::vec2 q2)
     }
 }
 
-void get_closest_wall_one_ray(glm::vec2 p, glm::vec2 v, float &dist, glm::vec3 &color, wall map[], int num_walls)
+void get_closest_wall_one_ray(glm::vec2 p, glm::vec2 v, float &dist, glm::vec3 &color, wall map[], uint32_t num_walls)
 {
     dist = INFINITY;
     color = COLOR_BLACK;
-    for (int j = 0; j < num_walls; j++)
+    for (uint32_t j = 0; j < num_walls; j++)
     {
         float d = cast_ray(p, v, map[j].p1, map[j].p2);
         if (d < dist)
@@ -96,12 +96,12 @@ void get_closest_wall_one_ray(glm::vec2 p, glm::vec2 v, float &dist, glm::vec3 &
     }
 }
 
-void calc_closest_walls(float buffer[], glm::vec3 color_buffer[], int n, wall map[], int num_walls)
+void calc_closest_walls(float buffer[], glm::vec3 color_buffer[], uint32_t n, wall map[], uint32_t num_walls)
 {
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
     glm::vec2 v = glm::rotate(dir, fov_2);
-    for (int i = 0; i < n; i++)
+    for (uint32_t i = 0; i < n; i++)
     {
         get_closest_wall_one_ray(pos, v, buffer[i], color_buffer[i], map, num_walls);
         v = glm::rotate(v, turn_angle);
@@ -128,7 +128,7 @@ int main()
 
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);    // Let window be resized
 
-    GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1600, 1200, "Doom Engine", NULL, NULL);
 
     if (!window)
     {
@@ -147,7 +147,7 @@ int main()
     screen::init(); // Prepare screen for rendering
     input userInput(window);
 
-    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     double lastFrameTime = glfwGetTime();
 
     uint32_t frames = 0;
@@ -157,7 +157,7 @@ int main()
     glm::vec3 *textures = new glm::vec3[width]; // per vertical line color
     while (!glfwWindowShouldClose(window))
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // Simple fps counter
         double curFrameTime = glfwGetTime();
@@ -173,7 +173,7 @@ int main()
         }
 
         // Check if window has been resized
-        int old_width = width;
+        uint32_t old_width = width;
         glfwGetFramebufferSize(window, (int*)&width, (int*)&height);
         glViewport(0, 0, width, height);
 

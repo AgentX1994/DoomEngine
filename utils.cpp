@@ -25,7 +25,7 @@ char *readSource(const char *file){
         
         if (f != NULL){
             fseek(f, 0, SEEK_END);
-            long len = ftell(f);
+            uint64_t len = ftell(f);
             rewind(f);
             
             if (len > 0) {
@@ -41,9 +41,9 @@ char *readSource(const char *file){
 
 void mat4PrettyPrint(glm::mat4 m){
     std::cout << "[" << std::endl;
-    for (int i = 0; i < 4; i++) {
+    for (uint8_t i = 0; i < 4; i++) {
         std::cout << "[";
-        for (int j = 0; j < 4; j++) {
+        for (uint8_t j = 0; j < 4; j++) {
             std::cout << *(&m[i][j]);
             if (j < 3) {
                 std::cout << ", ";
@@ -56,7 +56,7 @@ void mat4PrettyPrint(glm::mat4 m){
 
 void vec3PrettyPrint(glm::vec3 v){
     std::cout << "(";
-    for (int i = 0; i < 3; i++){
+    for (uint8_t i = 0; i < 3; i++){
         std::cout << v[i];
         if (i < 2) {
             std::cout << ", ";
