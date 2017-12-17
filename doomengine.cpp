@@ -2,6 +2,7 @@
 #include "program.hpp"
 #include "screen.hpp"
 #include "input.hpp"
+#include "camera.hpp"
 
 // A simple error callback that just echos errors to the cerr stream
 void error_callback(int error, const char* des)
@@ -9,11 +10,6 @@ void error_callback(int error, const char* des)
     std::cerr << "ERROR: " << des << std::endl;
 }
 
-// Temporary direction vector for raycasting
-const glm::vec2 start_pos(0,0);
-const glm::vec2 start_view_dir = glm::normalize(glm::vec2(1,0));
-glm::vec2 pos(0,0);
-glm::vec2 view_dir = start_view_dir;
 float fov = degrees_to_radians(60);
 float turn_amount = degrees_to_radians(5);
 
@@ -45,21 +41,6 @@ wall walls[] = {
     { {  5.0, -5.0 }, { -5.0, -5.0 }, COLOR_BLUE  },
     { { -5.0, -5.0 }, { -5.0,  5.0 }, COLOR_RED   },
 };
-
-/* const float box_radius = 10; // size of box from 0,0 to a corner */
-/* glm::vec2 wall_points[] = { */
-/*     glm::vec2(-box_radius,-box_radius), */
-/*     glm::vec2(-box_radius, box_radius), */
-/*     glm::vec2( box_radius,-box_radius), */
-/*     glm::vec2( box_radius, box_radius) */
-/* }; */
-
-/* wall walls[] = { */
-/*     {wall_points[0], wall_points[1], COLOR_WHITE}, */
-/*     {wall_points[1], wall_points[3], COLOR_RED}, */
-/*     {wall_points[2], wall_points[3], COLOR_BLUE}, */
-/*     {wall_points[0], wall_points[2], COLOR_GREEN}, */
-/* }; */
 
 uint32_t num_walls = sizeof(walls)/sizeof(wall);
 
@@ -110,14 +91,14 @@ void get_closest_wall_one_ray(glm::vec2 p, glm::vec2 v, float &dist, glm::vec3 &
     }
 }
 
-void calc_closest_walls(float buffer[], glm::vec3 color_buffer[], uint32_t n, wall map[], uint32_t num_walls)
+void calc_closest_walls(camera cam, float buffer[], glm::vec3 color_buffer[], uint32_t n, wall map[], uint32_t num_walls)
 {
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
-    glm::vec2 v = glm::rotate(view_dir, fov_2);
+    glm::vec2 v = glm::rotate(cam.getViewDirection(), fov_2);
     for (uint32_t i = 0; i < n; i++)
     {
-        get_closest_wall_one_ray(pos, v, buffer[i], color_buffer[i], map, num_walls);
+        get_closest_wall_one_ray(cam.getPosition(), v, buffer[i], color_buffer[i], map, num_walls);
         v = glm::rotate(v, turn_angle);
     }
 }
@@ -169,6 +150,9 @@ int main()
 
     float *distances = new float[width]; // per vertical line distance buffer
     glm::vec3 *textures = new glm::vec3[width]; // per vertical line color
+
+    camera player;
+
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
@@ -207,50 +191,49 @@ int main()
         }
         if (userInput.getResetPressed())
         {
-            pos = start_pos;
-            view_dir = start_view_dir;
+            player = camera();
         }
         if (userInput.getMoveForward())
         {
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, view_dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(player.getPosition(), player.getViewDirection(), dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos += view_dir*move_speed;
+                player.move(move_speed);
         }
         if (userInput.getMoveBackward())
         {
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, -view_dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(player.getPosition(), -player.getViewDirection(), dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos -= view_dir*move_speed;
+                player.move(-move_speed);
         }
         if (userInput.getMoveLeft())
         {
-            glm::vec2 move_view_dir = glm::rotate(view_dir, (float)M_PI/2);
+            glm::vec2 move_view_dir = glm::rotate(player.getViewDirection(), (float)M_PI/2);
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, move_view_dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(player.getPosition(), move_view_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos += move_view_dir*move_speed;
+                player.move(M_PI/2, move_speed);
         }
         if (userInput.getMoveRight())
         {
-            glm::vec2 move_dir = glm::rotate(view_dir, (float)-M_PI/2);
+            glm::vec2 move_dir = glm::rotate(player.getViewDirection(), (float)-M_PI/2);
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, move_dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(player.getPosition(), move_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos += move_dir*move_speed;
+                player.move(-M_PI/2, move_speed);
         }
         if (userInput.getTurnLeft())
         {
-            view_dir = glm::rotate(view_dir, turn_speed);
+            player.turn(turn_speed);
         }
         if (userInput.getTurnRight())
         {
-            view_dir = glm::rotate(view_dir, -turn_speed);
+            player.turn(-turn_speed);
         }
 
         // fill distance and color buffers
-        calc_closest_walls(distances, textures, width, walls, num_walls);
+        calc_closest_walls(player, distances, textures, width, walls, num_walls);
 
         //render here
         screen::setDistances(distances, width);
