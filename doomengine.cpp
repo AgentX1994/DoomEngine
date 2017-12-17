@@ -10,13 +10,23 @@ void error_callback(int error, const char* des)
 }
 
 // Temporary direction vector for raycasting
+const glm::vec2 start_pos(0,0);
+const glm::vec2 start_view_dir = glm::normalize(glm::vec2(1,0));
 glm::vec2 pos(0,0);
-glm::vec2 dir = glm::normalize(glm::vec2(1,1));
+glm::vec2 view_dir = start_view_dir;
 float fov = degrees_to_radians(60);
 float turn_amount = degrees_to_radians(5);
 
 float move_speed = 0.05;
 float turn_speed = degrees_to_radians(2);
+
+// Simple Colors to use for walls
+glm::vec3 COLOR_RED     (1.0, 0.0, 0.0);
+glm::vec3 COLOR_WHITE   (1.0, 1.0, 1.0);
+glm::vec3 COLOR_BLUE    (0.0, 0.0, 1.0);
+glm::vec3 COLOR_GREEN   (0.0, 1.0, 0.0);
+glm::vec3 COLOR_PINK    (1.0, 0.5, 0.5);
+glm::vec3 COLOR_BLACK   (0.0, 0.0, 0.0);
 
 // Walls for testing the ray tracing
 typedef struct wall {
@@ -25,27 +35,31 @@ typedef struct wall {
     glm::vec3 color;
 } wall;
 
-const float box_radius = 10; // size of box from 0,0 to a corner
-glm::vec2 wall_points[] = {
-    glm::vec2(-box_radius,-box_radius),
-    glm::vec2(-box_radius, box_radius),
-    glm::vec2( box_radius,-box_radius),
-    glm::vec2( box_radius, box_radius)
-};
-
-glm::vec3 COLOR_RED     (1.0, 0.0, 0.0);
-glm::vec3 COLOR_WHITE   (1.0, 1.0, 1.0);
-glm::vec3 COLOR_BLUE    (0.0, 0.0, 1.0);
-glm::vec3 COLOR_GREEN   (0.0, 1.0, 0.0);
-glm::vec3 COLOR_PINK    (1.0, 0.5, 0.5);
-glm::vec3 COLOR_BLACK   (0.0, 0.0, 0.0);
-
 wall walls[] = {
-    {wall_points[0], wall_points[1], COLOR_WHITE},
-    {wall_points[1], wall_points[3], COLOR_RED},
-    {wall_points[2], wall_points[3], COLOR_BLUE},
-    {wall_points[0], wall_points[2], COLOR_GREEN},
+    { { -5.0,  5.0 }, {  5.0,  5.0 }, COLOR_BLUE  },
+    { {  5.0,  5.0 }, {  5.0,  1.0 }, COLOR_RED   },
+    { {  5.0,  1.0 }, { 10.0,  5.0 }, COLOR_GREEN },
+    { { 10.0,  5.0 }, { 10.0, -5.0 }, COLOR_BLUE  },
+    { { 10.0, -5.0 }, {  5.0, -1.0 }, COLOR_RED   },
+    { {  5.0, -1.0 }, {  5.0, -5.0 }, COLOR_GREEN },
+    { {  5.0, -5.0 }, { -5.0, -5.0 }, COLOR_BLUE  },
+    { { -5.0, -5.0 }, { -5.0,  5.0 }, COLOR_RED   },
 };
+
+/* const float box_radius = 10; // size of box from 0,0 to a corner */
+/* glm::vec2 wall_points[] = { */
+/*     glm::vec2(-box_radius,-box_radius), */
+/*     glm::vec2(-box_radius, box_radius), */
+/*     glm::vec2( box_radius,-box_radius), */
+/*     glm::vec2( box_radius, box_radius) */
+/* }; */
+
+/* wall walls[] = { */
+/*     {wall_points[0], wall_points[1], COLOR_WHITE}, */
+/*     {wall_points[1], wall_points[3], COLOR_RED}, */
+/*     {wall_points[2], wall_points[3], COLOR_BLUE}, */
+/*     {wall_points[0], wall_points[2], COLOR_GREEN}, */
+/* }; */
 
 uint32_t num_walls = sizeof(walls)/sizeof(wall);
 
@@ -100,7 +114,7 @@ void calc_closest_walls(float buffer[], glm::vec3 color_buffer[], uint32_t n, wa
 {
     float fov_2 = fov/2;
     float turn_angle = -fov/n;
-    glm::vec2 v = glm::rotate(dir, fov_2);
+    glm::vec2 v = glm::rotate(view_dir, fov_2);
     for (uint32_t i = 0; i < n; i++)
     {
         get_closest_wall_one_ray(pos, v, buffer[i], color_buffer[i], map, num_walls);
@@ -189,32 +203,38 @@ int main()
         if (userInput.getExitPressed())
         {
             glfwSetWindowShouldClose(window, true);
+            continue;
+        }
+        if (userInput.getResetPressed())
+        {
+            pos = start_pos;
+            view_dir = start_view_dir;
         }
         if (userInput.getMoveForward())
         {
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(pos, view_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos += dir*move_speed;
+                pos += view_dir*move_speed;
         }
         if (userInput.getMoveBackward())
         {
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, -dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(pos, -view_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos -= dir*move_speed;
+                pos -= view_dir*move_speed;
         }
         if (userInput.getMoveLeft())
         {
-            glm::vec2 move_dir = glm::rotate(dir, (float)M_PI/2);
+            glm::vec2 move_view_dir = glm::rotate(view_dir, (float)M_PI/2);
             float dist; glm::vec3 color;
-            get_closest_wall_one_ray(pos, move_dir, dist, color, walls, num_walls);
+            get_closest_wall_one_ray(pos, move_view_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
-                pos += move_dir*move_speed;
+                pos += move_view_dir*move_speed;
         }
         if (userInput.getMoveRight())
         {
-            glm::vec2 move_dir = glm::rotate(dir, (float)-M_PI/2);
+            glm::vec2 move_dir = glm::rotate(view_dir, (float)-M_PI/2);
             float dist; glm::vec3 color;
             get_closest_wall_one_ray(pos, move_dir, dist, color, walls, num_walls);
             if (dist > move_speed)
@@ -222,11 +242,11 @@ int main()
         }
         if (userInput.getTurnLeft())
         {
-            dir = glm::rotate(dir, turn_speed);
+            view_dir = glm::rotate(view_dir, turn_speed);
         }
         if (userInput.getTurnRight())
         {
-            dir = glm::rotate(dir, -turn_speed);
+            view_dir = glm::rotate(view_dir, -turn_speed);
         }
 
         // fill distance and color buffers

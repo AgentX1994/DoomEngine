@@ -13,5 +13,7 @@ void input::pollInput()
     GET_TWO_KEYS(turnLeftPressed, GLFW_KEY_Q, GLFW_KEY_LEFT);
     GET_TWO_KEYS(turnRightPressed, GLFW_KEY_E, GLFW_KEY_RIGHT);
 
+    GET_KEY(resetPressed, GLFW_KEY_R);
+
     GET_KEY(exitPressed, GLFW_KEY_ESCAPE);
 }

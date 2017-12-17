@@ -13,6 +13,7 @@ class input
         bool turnLeftPressed;
         bool turnRightPressed;
         bool exitPressed;
+        bool resetPressed;
 
     public:
         input(GLFWwindow* w) : window(w) {}
@@ -25,4 +26,5 @@ class input
         inline bool getTurnLeft() { return turnLeftPressed; }
         inline bool getTurnRight() { return turnRightPressed; }
         inline bool getExitPressed() { return exitPressed; }
+        inline bool getResetPressed() { return resetPressed; }
 };
