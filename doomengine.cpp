@@ -180,6 +180,8 @@ int main()
             std::cout << "width changed" << std::endl;
             delete [] distances;
             distances = new float[width]; // Create new distance buffer
+            delete [] textures;
+            textures = new glm::vec3[width]; // and texture buffer
         }
 
         userInput.pollInput();
