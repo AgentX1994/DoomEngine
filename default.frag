@@ -10,8 +10,8 @@ uniform sampler1D colors;
 // and a distance of 0.0 as the whole screen
 
 // Some random colors to use
-vec3 ceilColor  = vec3(0.4, 0.5, 0.9);
-vec3 floorColor = vec3(0.5, 0.5, 0.5);
+vec4 ceilColor  = vec4(0.4, 0.5, 0.9, 1.0);
+vec4 floorColor = vec4(0.5, 0.5, 0.5, 1.0);
 
 const float dist_to_viewport = 0.1;
 const float wall_height = 3;
@@ -28,10 +28,10 @@ void main()
         upperThreshold = 0.5;
         lowerThreshold = 0.5;
     }
-    vec3 wallColor = texture(colors, uvs.x).rgb;
+    vec4 wallColor = texture(colors, uvs.x);
 
     float height = uvs.y;
-    vec3 color;
+    vec4 color;
     if (height > upperThreshold)
     {
         color = ceilColor;
@@ -42,5 +42,5 @@ void main()
     {
         color = floorColor;
     }
-    outColor = vec4(color, 1.0);
+    outColor = color;
 }

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cmath>
+#include <ctime>
 
 // OpenGl includes
 #include <OpenGL/GL3.h>
@@ -15,6 +16,9 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+
+// Typedefs
+typedef glm::vec4 Color;
 
 // Utility Functions
 #include "utils.hpp"

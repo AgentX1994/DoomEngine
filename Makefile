@@ -1,7 +1,7 @@
-LIBS = -lGLFW3
+LIBS = -lGLFW3 -lfreetype
 FRAMEWORKS = -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
 TARGET = doomengine
-FLAGS = -g -std=c++14
+FLAGS = -g -std=c++14 -I/usr/local/opt/freetype/include/freetype2
 CC = g++
 
 all: $(TARGET)
@@ -9,7 +9,7 @@ all: $(TARGET)
 
 $(TARGET): doomengine.o program.o utils.o screen.o input.o
 	$(CC) $(FLAGS) $^ $(LIBS) $(FRAMEWORKS) -o $@
-	
+
 doomengine.o: doomengine.cpp main.hpp
 	$(CC) $(FLAGS) -c $<
 

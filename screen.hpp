@@ -28,7 +28,7 @@ class screen
         static void setDistances(float d[], int n);
 
         // Sends the color information to the color texture
-        static void setColors(glm::vec3 colors[], int n);
+        static void setColors(Color colors[], int n);
 
         // Renders the screen rectangle
         static void render();

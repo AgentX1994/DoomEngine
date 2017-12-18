@@ -48,7 +48,7 @@ void screen::init()
     glBufferData(GL_ARRAY_BUFFER, 3*4*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
     GLint posAttrib = glGetAttribLocation(shader->getID(), "vert_position");
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(posAttrib);
 
     // create UV buffer
     glGenBuffers(1, (GLuint *)&uvBuffer);
@@ -56,7 +56,7 @@ void screen::init()
     glBufferData(GL_ARRAY_BUFFER, 2*4*sizeof(GLfloat), uvs, GL_STATIC_DRAW);
     GLint uvAttrib = glGetAttribLocation(shader->getID(), "in_uvs");
     glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(uvAttrib);
 
     glBindVertexArray(0);
 
@@ -119,7 +119,7 @@ void screen::setDistances(float *d, int n)
     glCheckErrors("dist done making texture");
 }
 
-void screen::setColors(glm::vec3 *d, int n)
+void screen::setColors(Color *d, int n)
 {
     // Bind the distance texture
     glActiveTexture(GL_TEXTURE0 + 0);
@@ -137,7 +137,7 @@ void screen::setColors(glm::vec3 *d, int n)
             GL_RGBA32F,         // Internal data storage format
             n,                  // Size of data in pixels
             0,                  // Border, must be 0
-            GL_RGB,             // How d is stored locally
+            GL_RGBA,            // How d is stored locally
             GL_FLOAT,           // Data type used by d
             d                   // d
             );
