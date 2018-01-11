@@ -3,9 +3,8 @@
 #include "screen.hpp"
 #include "input.hpp"
 #include "camera.hpp"
+#include "glyphcache.hpp"
 #include <sstream>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 // A simple error callback that just echos errors to the cerr stream
 void error_callback(int error, const char* des)
@@ -110,28 +109,16 @@ void calc_closest_walls(camera cam, float buffer[], Color color_buffer[], uint32
 FT_Face face;
 FT_GlyphSlot g;
 // Function to draw a line of text
-void render_text(const char *text, float x, float y, float sx, float sy) {
+void render_text(glyphcache cache, const char *text, float x, float y, float sx, float sy) {
   const char *p;
 
   for(p = text; *p; p++) {
-    if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
-    {
-        std::cerr << "Cannot load character '" << *p << "'!" << std::endl;
-        continue;
-    }
  
-    glTexImage2D(
-      GL_TEXTURE_2D,
-      0,
-      GL_RED,
-      g->bitmap.width,
-      g->bitmap.rows,
-      0,
-      GL_RED,
-      GL_UNSIGNED_BYTE,
-      g->bitmap.buffer
-    );
- 
+    cache_entry e = cache.get(*p);
+
+    g = e.glyph;
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,e.tex_id);
     float x2 = x + g->bitmap_left * sx;
     float y2 = -y - g->bitmap_top * sy;
     float w = g->bitmap.width * sx;
@@ -202,7 +189,7 @@ int main()
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-    g = face->glyph;
+    glyphcache cache(face);
 
     FT_Set_Pixel_Sizes(face, 0, 48);
 
@@ -372,8 +359,8 @@ int main()
         float sx = 2.0/width;
         float sy = 2.0/height;
         std::stringstream s;
-        s << fps << " fps" << delta << " ms per frame";
-        render_text(s.str().c_str(),
+        s << fps << " fps " << delta << " ms per frame";
+        render_text(cache, s.str().c_str(),
                 -1 + 8 * sx,   1 - 50 * sy,    sx, sy);
 
         textShader.unuse();

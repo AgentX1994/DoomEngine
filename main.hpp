@@ -17,6 +17,10 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+// FT2 includes
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 // Typedefs
 typedef glm::vec4 Color;
 

@@ -7,7 +7,7 @@ CC = g++
 all: $(TARGET)
 
 
-$(TARGET): doomengine.o program.o utils.o screen.o input.o
+$(TARGET): doomengine.o program.o utils.o screen.o input.o glyphcache.o
 	$(CC) $(FLAGS) $^ $(LIBS) $(FRAMEWORKS) -o $@
 
 doomengine.o: doomengine.cpp main.hpp
@@ -23,6 +23,9 @@ screen.o: screen.cpp screen.hpp main.hpp
 	$(CC) $(FLAGS) -c $<
 
 input.o: input.cpp input.hpp main.hpp
+	$(CC) $(FLAGS) -c $<
+
+glyphcache.o: glyphcache.cpp glyphcache.hpp
 	$(CC) $(FLAGS) -c $<
 
 clean:
