@@ -107,36 +107,35 @@ void calc_closest_walls(camera cam, float buffer[], Color color_buffer[], uint32
 }
 
 FT_Face face;
-FT_GlyphSlot g;
 // Function to draw a line of text
-void render_text(glyphcache cache, const char *text, float x, float y, float sx, float sy) {
-  const char *p;
+void render_text(glyphcache &cache, const char *text, float x, float y, float sx, float sy) {
+    const char *p;
 
-  for(p = text; *p; p++) {
- 
-    cache_entry e = cache.get(*p);
+    for(p = text; *p; p++) {
 
-    g = e.glyph;
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,e.tex_id);
-    float x2 = x + g->bitmap_left * sx;
-    float y2 = -y - g->bitmap_top * sy;
-    float w = g->bitmap.width * sx;
-    float h = g->bitmap.rows * sy;
+        cache_entry e = cache.get(*p);
 
-    GLfloat box[4][4] = {
-        {x2,     -y2    , 0, 0},
-        {x2 + w, -y2    , 1, 0},
-        {x2,     -y2 - h, 0, 1},
-        {x2 + w, -y2 - h, 1, 1},
-    };
- 
-    glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
- 
-    x += (g->advance.x/64) * sx;
-    y += (g->advance.y/64) * sy;
-  }
+        FT_BitmapGlyph g = e.glyph;
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,e.tex_id);
+        float x2 = x + g->left * sx;
+        float y2 = -y - g->top * sy;
+        float w = g->bitmap.width * sx;
+        float h = g->bitmap.rows * sy;
+
+        GLfloat box[4][4] = {
+            {x2,     -y2    , 0, 0},
+            {x2 + w, -y2    , 1, 0},
+            {x2,     -y2 - h, 0, 1},
+            {x2 + w, -y2 - h, 1, 1},
+        };
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        x += (e.advancex/64) * sx;
+        y += (e.advancey/64) * sy;
+    }
 }
 
 int main()
@@ -240,7 +239,7 @@ int main()
     glCheckErrors("setup glyph vert attrib 4");
 
     glBindVertexArray(0);
-    
+
     glClearColor(0.0, 0.0, 0.0, 1.0);
     double lastFrameTime = glfwGetTime();
 
@@ -355,13 +354,17 @@ int main()
         glUniform1i(texLoc, 0);
         glUniform4fv(colorLoc, 1, &COLOR_BLACK[0]);
         glCheckErrors("Setup glyph uniforms");
-        
+
         float sx = 2.0/width;
         float sy = 2.0/height;
         std::stringstream s;
         s << fps << " fps " << delta << " ms per frame";
         render_text(cache, s.str().c_str(),
                 -1 + 8 * sx,   1 - 50 * sy,    sx, sy);
+        render_text(cache, "This is a nice long string that should really stress test the cache",
+                -1 + 8 *sx, 1 - 100 * sy, sx, sy);
+        render_text(cache, "The Quick Brown Fox Jumps Over The Lazy Dog",
+                -1 + 8 * sx, 1 - 150 * sy, sx, sy);
 
         textShader.unuse();
         glBindVertexArray(0);

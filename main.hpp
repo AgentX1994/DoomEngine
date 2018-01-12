@@ -20,6 +20,7 @@
 // FT2 includes
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_GLYPH_H
 
 // Typedefs
 typedef glm::vec4 Color;
