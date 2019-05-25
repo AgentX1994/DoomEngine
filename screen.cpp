@@ -176,9 +176,9 @@ void screen::render()
     glCheckErrors("bind ibo");
 
     // bind uniforms
-    glm::mat4 proj = glm::mat4(); //glm::perspective(60.0f, ratio, 0.1f, 100.f);
-    glm::mat4 view = glm::mat4();
-    glm::mat4 model = glm::mat4();
+    glm::mat4 proj = glm::mat4(1.0f); //glm::perspective(60.0f, ratio, 0.1f, 100.f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
 
     GLint projLoc = glGetUniformLocation(shader->getID(), "mProj");
     GLint viewLoc = glGetUniformLocation(shader->getID(), "mView");

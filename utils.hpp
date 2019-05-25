@@ -20,6 +20,14 @@ void mat4PrettyPrint(glm::mat4 m);
 
 void vec3PrettyPrint(glm::vec3 v);
 
-void glCheckErrors(std::string loc);
+#define glCheckErrors(x) glCheckErrorsImpl(x, __FILE__, __LINE__)
+void glCheckErrorsImpl(std::string description, std::string filename, int line);
 
+void APIENTRY openglCallbackFunction(GLenum source,
+                                     GLenum type,
+                                     GLuint id,
+                                     GLenum severity,
+                                     GLsizei length,
+                                     const GLchar* message,
+                                     const void* userParam);
 #endif /* utils_hpp */

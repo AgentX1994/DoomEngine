@@ -120,10 +120,30 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);                  // OpenGL 3.2
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Forward compatible
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // Core
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);             // Debug Context
 
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);    // Let window be resized
 
     GLFWwindow *window = glfwCreateWindow(1600, 1200, "Doom Engine", NULL, NULL);
+
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(openglCallbackFunction, NULL);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+
+    {
+        GLint flags;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+
+        if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+        {
+            std::cout << "Debug context successfully started." << std::endl;
+        }
+        else
+        {
+            std::cerr << "Warning: could not start debug context!" << std::endl;
+        }
+    }
 
     if (!window)
     {
@@ -246,6 +266,7 @@ int main()
         glfwPollEvents();
     }
     delete [] distances;
+    delete [] textures;
 
     glfwDestroyWindow(window);
     glfwTerminate();

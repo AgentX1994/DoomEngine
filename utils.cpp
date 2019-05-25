@@ -65,10 +65,10 @@ void vec3PrettyPrint(glm::vec3 v){
     std::cout << ")" << std::endl;
 }
 
-void glCheckErrors(std::string loc){
+void glCheckErrorsImpl(std::string description, std::string filename, int line){
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR){
-        std::cout << "OPEN GL ERROR at location " << loc << "!" << std::endl;
+        std::cout << "OPEN GL ERROR at " << filename << ":" << line << " description: " << description << "!" << std::endl;
         switch (err) {
             case GL_INVALID_ENUM:
                 std::cout << "\tInvalid Enum";
@@ -93,7 +93,6 @@ void glCheckErrors(std::string loc){
     }
 }
 
-/*
 void APIENTRY openglCallbackFunction(GLenum source,
                                      GLenum type,
                                      GLuint id,
@@ -143,4 +142,3 @@ void APIENTRY openglCallbackFunction(GLenum source,
     std::cout << std::endl;
     std::cout << "---------------------opengl-callback-end--------------" << std::endl;
 }
-*/

@@ -1,4 +1,4 @@
-#version 150 core
+#version 400 core
 
 in vec3 vert_position;
 in vec2 in_uvs;
